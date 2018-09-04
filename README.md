@@ -24,10 +24,10 @@ In this case the shebang line can still select the appropriate interpreter, even
 
 ## Installation
 To install the file type handler you should:
-- choose a system-wide installation directory and clone or copy the script there. I used `C:\Local\invoke_perl_shebang.cmd`. You could add the location to your PATH, and you should no longer need the absolute file name.
+- choose a system-wide installation directory and clone or copy the script there. I used `C:\Local\invoke_perl_shebang.cmd`. You could add the location to your `PATH`, and you should no longer need the absolute file name.
 - choose the file extension, for example `.pl` for perl scripts, and a name for the file type, like `PerlScriptFile`.
 - remember to check that the file extension appears in `PATHEXT` environment variable. Append the extension, separated with `;`, if needed, like: `setx PATHEXT=%PATHEXT%;.pl`.
-- start a `cmd` window as administrator and run the below commands:
+- start a `cmd` window as Administrator and run the below commands:
 ```
     Assoc .pl=PerlScriptFile
     FType PerlScriptFile="C:\Local\invoke_perl_shebang.cmd" "%1" %*
@@ -49,15 +49,15 @@ This fallback will not help if you use other languages (TODO: fix script to make
 The way the file type handler checks the interpreter from shebang line is:
 - separate the line into the interpreter pathname and an optional (additional) argument. There can be no more the one such argument on a shebang line for Linux systems, but the file type handler does not have a specific limit.
 - the interpreter name can be quoted to include file names with spaces. Same for the optional argument
-- if the interpreter is `/bin/env` or `/usr/bin/env`, it is ignored and the following argument is used instead. This use case was usefull at some time on Linux in order to pick an interpreter from anywhere on the system PATH, while providing an absolute path name on the shebang line. See the [env](http://pubs.opengroup.org/onlinepubs/9699919799/utilities/env.html) command in the POSIX specification.
+- if the interpreter is `/bin/env` or `/usr/bin/env`, it is ignored and the following argument is used instead. This use case was usefull at some time on Linux in order to pick an interpreter from anywhere on the system PATH, while providing an absolute path name on the shebang line. See the [env](http://pubs.opengroup.org/onlinepubs/9699919799/utilities/env.html) command in The Open Group specification.
 - check if the given interpreter exists as a file name, and use it if so
 - check if any extesions from `PATHEXT` list can be appended to the interpreter name, so it can be found as a file name, and use it if so
 - search the given interpreter on system `PATH`
-- try to append every extension from `PATHEXT` in turn and see if the resulting name can be found on `PATH`. These checks allow you to use a shebang line like`#!perl`, and then perl.exe will be found anywhere on your `PATH` (if not already in the current directory).
-- if all above steps fail then keep the base name of the interpreter and remove (ignore) the path. This is usefull for Linux paths like `/usr/bin/perl6` that will not normally be found when on Windows. But the base name `perl6` may still be found.
+- try to append every extension from `PATHEXT` in turn and see if the resulting name can be found on `PATH`. These checks allow you to use a shebang line like`#!perl`, and then `perl.exe` will be found anywhere on your `PATH` (if not already in the current directory).
+- if all above steps fail then keep the base name of the interpreter and remove (ignore) the path. This is usefull for Linux paths like `/usr/bin/perl6` that will not normally be found when on Windows. But the base name `perl6` may still be found on `PATH`.
 - check if the basename is `perl6` and use `perl6` command if so. TODO: no need to stick to `perl6` here, any base name can be further searched on path.
-- if all checks fail then use `perl` command to run the script. On Linux systems `perl` will check the shebang line itself, but not on Windows (except to extract arguments to the perl command if any are found there).
+- if all checks fail then use `perl` command to run the script. On Linux systems `perl` will check the shebang line itself, but not on Windows (except to extract arguments to the `perl` if any are found there).
 
 As it is a `.cmd` script, the file type handler will open a console window in order to run the script. This is an issue if the script is a graphical (GUI) application. For this case a non-console version of the file type handler will be needed, that is _not_ provided here (maybe later).
 
-Also note that file type handlers on Windows can be more complex and based on registered shell-specific .dll functions, so this script is just a simple approach to the issue.
+Also note that file type handlers on Windows can be more complex and based on registering shell-specific .dll functions, so this script is just a simple approach to the issue.
