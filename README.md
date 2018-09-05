@@ -1,3 +1,5 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/q2s48eeh295xnksm/branch/master?svg=true)](https://ci.appveyor.com/project/terminatorul/win-shebang-line/branch/master)
+
 # win-shebang-line
 Windows file type handler for scripts with `#!` shebang line.
 
@@ -8,7 +10,7 @@ The [perl](http://www.perl.org/) interpreter on Linux is most likely installed a
 ```
 #!/usr/bin/perl --
 ```
-followed by actual perl source code. Lines starting with `#` are comments in Perl, so the interpreter is not bothered by this line, even though the line is not meant for perl itself.
+followed by actual perl source code. Lines starting with `#` are comments in Perl, so the interpreter is not bothered by this line, even though it is not meant for perl itself.
 
 It is meant for the system shell (command interpreter, running for example in a terminal window), to know how to run the script when invoked as an executable command.
 
@@ -26,7 +28,7 @@ In this case the shebang line can still select the appropriate interpreter, even
 To install the file type handler you should:
 - choose a system-wide installation directory and clone or copy the script there. I used `C:\Local\invoke_perl_shebang.cmd`. You could add the location to your `PATH`, and you should no longer need the absolute file name.
 - choose the file extension, for example `.pl` for perl scripts, and a name for the file type, like `PerlScriptFile`.
-- remember to check that the file extension appears in `PATHEXT` environment variable. Append the extension, separated with `;`, if needed, like: `setx PATHEXT=%PATHEXT%;.pl`.
+- remember to check that the file extension appears in `PATHEXT` environment variable. Append the extension, separated with `;`, if needed, like: `setx PATHEXT "%PATHEXT%;.pl"`.
 - start a `cmd` window as Administrator and run the below commands:
 ```
     Assoc .pl=PerlScriptFile
@@ -37,19 +39,19 @@ That's it. Now open a non-admin console and run a script:
 scriptName.pl
 ```
 
-The file type handler (`invoke_perl_shebang.cmd`) will read the shebang line from the script and use the interprter given to run it.
+The file type handler (`invoke_perl_shebang.cmd`) will read the shebang line from the script and use the interpreter given to run it.
 
 ## Usage
 You can use the file type handler with any scripts that provide a shebang line, but if the line is not found, the handler will assume a perl script by default, so it will:
 - check to see if the interprter name ends with `perl6`, `perl6.exe`, `perl6.bat`, etc, and use the plain `perl6` command to run the script file
 - failing that, it will use the plain `perl` command.
 
-This fallback will not help if you use other languages (TODO: fix script to make it more generic).
+(TODO: fix script to make it more generic).
 
 The way the file type handler checks the interpreter from shebang line is:
 - separate the line into the interpreter pathname and an optional (additional) argument. There can be no more the one such argument on a shebang line for Linux systems, but the file type handler does not have a specific limit.
 - the interpreter name can be quoted to include file names with spaces. Same for the optional argument
-- if the interpreter is `/bin/env` or `/usr/bin/env`, it is ignored and the following argument is used instead. This use case was usefull at some time on Linux in order to pick an interpreter from anywhere on the system PATH, while providing an absolute path name on the shebang line. See the [env](http://pubs.opengroup.org/onlinepubs/9699919799/utilities/env.html) command in The Open Group specification.
+- if the interpreter is `/bin/env` or `/usr/bin/env`, it is ignored and the following argument is used instead. This use case was usefull at some time on Linux in order to pick an interpreter from anywhere on the system `PATH`, while providing an absolute path name on the shebang line. See the [env](http://pubs.opengroup.org/onlinepubs/9699919799/utilities/env.html) command in The Open Group specification.
 - check if the given interpreter exists as a file name, and use it if so
 - check if any extesions from `PATHEXT` list can be appended to the interpreter name, so it can be found as a file name, and use it if so
 - search the given interpreter on system `PATH`
@@ -60,4 +62,4 @@ The way the file type handler checks the interpreter from shebang line is:
 
 As it is a `.cmd` script, the file type handler will open a console window in order to run the script. This is an issue if the script is a graphical (GUI) application. For this case a non-console version of the file type handler will be needed, that is _not_ provided here (maybe later).
 
-Also note that file type handlers on Windows can be more complex and based on registering shell-specific .dll functions, so this script is just a simple approach to the issue.
+Also note that file type handlers on Windows can be more complex and based on registering shell-specific .dll functions, so this script is a simple approach to the issue.
