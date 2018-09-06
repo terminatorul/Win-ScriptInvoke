@@ -1,4 +1,4 @@
-#!/aşldj/faşsdlkfj/
+#!/aldkfjalsdkfa/aldfjkaşsldkjf/afd/perladfadsfasdf.ext
 
 # Use a wrong shell (interpreter) in the shebang line
 

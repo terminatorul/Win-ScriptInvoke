@@ -22,5 +22,6 @@ use Test::More tests => scalar(@{[tests]});
 
 for my $test_case (tests)
 {
-    ok(system(TEST_CMD, File::Spec->catfile(SCRIPT_DIR, $test_case->{'script'})) == 0, $test_case->{'name'});
+    system {+ $ENV{'COMSPEC'} } '/C', '(', TEST_CMD, File::Spec->catfile(SCRIPT_DIR, $test_case->{'script'}), ')';
+    ok(!$CHILD_ERROR, $test_case->{'name'});
 }

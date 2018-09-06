@@ -100,6 +100,7 @@ If Defined DEBUG_SHEBANG_INVOKER (
     Echo Running shebang line "!INTERPRETER!" !INTERPRETER_ARGS! %*
 )
 "!INTERPRETER!" !INTERPRETER_ARGS! %*
+Exit /B %ErrorLevel%
 GoTo :EOF
 
 :RunPerl6CmdWithArgs
@@ -107,6 +108,7 @@ If Defined DEBUG_SHEBANG_INVOKER (
     Echo Running perl6 command %PERL6_CMD% !INTERPRETER_ARGS! %*
 )
 %PERL6_CMD% !INTERPRETER_ARGS! %*
+Exit /B %ErrorLevel%
 GoTo :EOF
 
 :RunPlainPerl5Cmd
@@ -114,6 +116,7 @@ If Defined DEBUG_SHEBANG_INVOKER (
     Echo Running plain perl5 command %PERL5_CMD% %*
 )
 %PERL5_CMD% %*
+Exit /B %ErrorLevel%
 GoTo :EOF
 
 :RunPlainPerl6Cmd
@@ -121,4 +124,5 @@ If Defined DEBUG_SHEBANG_INVOKER (
     Echo Running plain perl6 command %PERL6_CMD% %*
 )
 %PERL6_CMD% %*
+Exit /B %ErrorLevel%
 GoTo :EOF

@@ -1,6 +1,6 @@
-#!C:\MinGW\msys\1.0\bin\sh
+#!C:\msys64\usr\bin\sh
 
-if test "$0" = "/usr/bin/sh" -a "$SHELL" = "/bin/sh"
+if test "$(/usr/bin/basename "$0")" = "full_path_no_ext.sh" -a \( "$SHELL" = "/bin/sh" -o "$SHELL" = "/usr/bin/bash" \)
 then
     echo "MinGW shell invoked from full path without extension."
 fi
