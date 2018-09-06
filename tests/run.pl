@@ -11,12 +11,16 @@ use constant TEST_CMD => (File::Spec->catfile(SCRIPT_DIR, File::Spec->updir(), T
 # test files
 use constant tests =>
 (
+    { script => 'shell_name_only.ruby', name => 'Shell basename without extension' },
+    { script => 'shell_name_and_ext.ruby', name => 'Shell basename with extension' },
     { script => 'full_path_with_ext.sh', name => 'Invoke full path with extension' },
     { script => 'full_path_no_ext.sh', name => 'Invoke full path without extension' },
     { script => 'invoke_with_arg_separator.sh', name => 'Invoke shell with arguments separator' },
     { script => 'invoke_with_multiple_args.sh', name => 'Invoke shell with multiple arguments' },
     { script => 'default_fallback_with_wrong_shell.pl', name => 'Fallback to default with wrong shell' },
-    { script => 'shellname_cmd_with_spaces.cmake', name => 'Shell name and arguments with spaces' }
+    { script => 'shell_cmd_with_spaces.cmake', name => 'Shell name and arguments with spaces' },
+    { script => 'ignore_bin_env.cmake', name => 'Ignore /bin/env interpreter' },
+    { script => 'ignore_usr_bin_env.cmake', name => 'Ignore /usr/bin/env interpreter' },
 );
 
 use Test::More tests => scalar(@{[tests]});
