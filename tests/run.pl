@@ -16,6 +16,7 @@ use constant tests =>
     { script => 'invoke_with_arg_separator.sh', name => 'Invoke shell with arguments separator' },
     { script => 'invoke_with_multiple_args.sh', name => 'Invoke shell with multiple arguments' },
     { script => 'default_fallback_with_wrong_shell.pl', name => 'Fallback to default with wrong shell' },
+    { script => 'shellname_cmd_with_spaces.cmake', name => 'Shell name and arguments with spaces' }
 );
 
 use Test::More tests => scalar(@{[tests]});
