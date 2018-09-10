@@ -4,7 +4,7 @@
 Windows file type handler for scripts with `#!` shebang line.
 
 ## Linux shebang line
-The shebang line (sharp-bang, that is `#` and `!`) is used as the first line of scripts on UNIX/Linux systems to provide the path of the interpreter to run the script.
+The shebang line (sharp-bang, that is `#` and `!`) is used as the first line of scripts on UNIX/Linux systems, to provide the path of the interpreter to run the script.
 
 The [perl](http://www.perl.org/) interpreter on Linux is most likely installed as `/usr/bin/perl`, so the first line of a perl script file looks like:
 ```
@@ -14,27 +14,29 @@ followed by actual perl source code. Lines starting with `#` are comments in Per
 
 It is meant for the system shell (command interpreter, running for example in a terminal window), to know how to run the script when invoked as an executable command.
 
+There are languages (like [php](http://php.net/)) with different rules for comments, that still ignore the first line if it starts with `#!`, just to support this mechanism.
+
 ## Windows file associations
 On Windows the interpreter for a script file is provided by its file association. Each file has an associated type, usually identified by the file extension, and the file type will provide a proper command to run the script (together with more associated "actions" and properties).
 
 ## Same extension with different interpreters
 Using a file extension as its type means all files of a given extension will be run with the same interpreter. This is rather intuitive for any user and most of the time it works nice.
 
-But it is possible to have the same extension for files with otherwise different types. In my case I wanned to run perl scripts written with either [Perl 6](https://perl6.org) or [Perl 5](http://www.perl.org/), and use the same file extension `.pl` for any of them. A similar situation exists for [Python 3](https://docs.python.org/3/) and [Python 2](https://docs.python.org/2/) scripts. The two versions are not compatible with each other and they must use different interpreters.
+But it is possible to have the same extension for files with different types. In my case I wanned to run perl scripts written with either [Perl 6](https://perl6.org) or [Perl 5](http://www.perl.org/), and use the same file extension `.pl` for both of them. A similar situation exists for [Python 3](https://docs.python.org/3/) and [Python 2](https://docs.python.org/2/) scripts. The two versions are not compatible with each other and they must use different interpreters.
 
 In this case the shebang line can select the appropriate interpreter, while the file extension is no longer sufficient.
 
 ## Installation
 To install the file type handler you should:
-- choose a system-wide installation directory and clone or copy the script there. I used `C:\Local\invoke_perl_shebang.cmd`. You could add the location to your `PATH`, and you should no longer need the absolute file name.
-- choose the file extension, for example `.pl` for perl scripts, and a name for the file type, like `PerlScriptFile`.
+- choose a system-wide installation directory and clone or copy the script there. I used `C:\Local\bin\win_script_invoke.cmd`. You could add the location to your `PATH`, and you should no longer need the absolute file name.
+- choose the file extension, for example `.pl` for perl scripts, and a name for the file type, like `PerlFamilyScript`.
 - remember to check that the file extension appears in `PATHEXT` environment variable. Append the extension, separated with `;`, if needed, like: `setx PATHEXT "%PATHEXT%;.pl"`.
 - start a `cmd` window as Administrator and run the below commands:
 ```
-    Assoc .pl=PerlScriptFile
-    FType PerlScriptFile="C:\Local\invoke_perl_shebang.cmd" "%1" %*
+    Assoc .pl=PerlFamilyScript
+    FType PerlFamilyScript="C:\Local\bin\win_script_invoke.cmd" --default-cmd perl -- "%1" %*
 ```
-That's it. Now open a non-admin console and run a script:
+That's it. Windows may prompt you on the first use of the modified file tpye (with new file handler), to confirm file type change. Open a non-admin console and run a script:
 ```
 scriptName.pl
 ```
@@ -43,26 +45,65 @@ or just
 scriptName
 ```
 
-The file type handler (`invoke_perl_shebang.cmd`) will read the shebang line from the script and use the given interpreter to run it.
+The file type handler (`win_script_invoke.cmd`) will read the shebang line from the script and use the given interpreter to run it. A number of command-line options are available _for the file type handler_:
+```
+F:\Local\bin>win_script_invoke.cmd
+
+Syntax:
+    "win_script_invoke.cmd" [--options]... -- ScriptFile.ext [script-args]...
+
+Read first line from ScriptFile.ext and use it as the command to run the script.
+
+The first line should begin with the chrarcters #!, which are not considered part of
+the command, and should be followed immediately by a command name and an optional argument.
+
+Options are:
+
+   --no-strip-location
+   --strip-location
+           the directory part of the #!-command is ignored if given but not found, and the
+           command basename alone is searched on PATH instead. The default is --strip-location.
+
+   --no-strip-extension
+   --strip-extension
+           The extension part of the #!-command is ignored if given but not found, and any
+           executable found with the same name is invoked regardless of extension. The default
+           is --strip-extension, although it is recommended that your script files not include
+           the .exe/.bat/... file extension on the shebang line.
+
+   --default-cmd "cmdName.exe"
+           Use cmdName.exe to run the script if the #! line is not found at the begining of
+           the scripit file.
+
+   --default-cmd-arg "arg"
+           Include given "arg" first on the command line when running "cmdName.exe". Use this
+           option multiple times to pass multiple arguments.
+
+   --no-fallback-to-default
+   --fallback-to-default
+           if the #! command is not found at all and a --default-cmd is given, invoke that
+           command to run the script, that is ignore the #!-command entirely if it is not
+           usable. The default is --fallback-to-default.
+```
 
 ## Usage
-You can use the file type handler with any scripts that provide a shebang line, but if the line is not found, the handler will assume a perl script by default, so it will:
-- check to see if the interpreter name ends with `perl6`, `perl6.exe`, `perl6.bat`, etc, and use the plain `perl6` command to run the script file
-- failing that, it will use the plain `perl` command.
-
-(TODO: fix script to make it more generic).
+You can use the file type handler with any scripts that provide a shebang line. If the line is not found at the begining of the script, then:
+- if `--default-cmd` option is given, that command is invoked as the interpreter. Interpreter arguments given with `--default-cmd-arg` are included on the new command line.
+- if there was no `--default-cmd` option given, then an error is show like the following:
+```
+Expected initial #! line with script interpreter name for <scriptFileName.ext>
+```
 
 The way the file type handler checks the interpreter from shebang line is:
-- separate the line into the interpreter pathname and an optional (additional) argument. There can be no more the one such argument on a shebang line for Linux systems, but the file type handler does not have a specific limit.
-- the interpreter name can be quoted to include file names with spaces. Same for the optional argument
-- if the interpreter is `/bin/env` or `/usr/bin/env`, it is ignored and the following argument is used instead. This use case helps UNIX systems to pick an interpreter from anywhere on  `PATH`, while providing an absolute file name on the shebang line. See the [env](http://pubs.opengroup.org/onlinepubs/9699919799/utilities/env.html) command in The Open Group specification.
-- check if the given interpreter exists as a file name, and use it if so
-- check if any extesions from `PATHEXT` list can be appended to the interpreter name, so it can be found as a file name, and use it if so
-- search the given interpreter on system `PATH`
-- try to append every extension from `PATHEXT` in turn and see if the resulting name can be found on `PATH`. These checks allow you to use a shebang line like`#!perl`, and then `perl.exe` will be found anywhere on your `PATH` (if not already in the current directory).
-- if all above steps fail then keep the base name of the interpreter and remove (ignore) the path. This is usefull for Linux paths like `/usr/bin/perl6` that will not normally be found when on Windows. But the base name `perl6` may still be found on `PATH`.
-- check if the basename is `perl6` and use `perl6` command if so. TODO: no need to stick to `perl6` here, any base name can be further searched on path.
-- if all checks fail then use `perl` command to run the script. On Linux systems `perl` will check the shebang line itself, but not on Windows (except to extract arguments to `perl` if any are found there).
+- separate the line into interpreter pathname and an optional (additional) argument. There can be no more the one such argument on a shebang line for Linux systems, so your scripts should follow this limit.
+- the interpreter name can be quoted to include file names with spaces. Same for optional arguments
+- if the interpreter is `/bin/env` or `/usr/bin/env`, it is ignored and the following argument is used instead. This use case allows UNIX systems to pick an interpreter from anywhere on  `PATH`, while still starting the shebang line with an absolute file name. See the [env](http://pubs.opengroup.org/onlinepubs/9699919799/utilities/env.html) command in The Open Group specification.
+- check if the given interpreter exists as a file name, and invoke it if so
+- check if any extensions from `PATHEXT` list can be appended to the interpreter name, so it can be found as a file name
+- search the given interpreter on system `PATH`, and for each path:
+    * append every extension from `PATHEXT` in turn and see if the resulting name can be found. These checks allow you to use a shebang line like `#!perl`, and then `perl.exe` can be found (the same process used by `cmd.exe`).
+- if above steps fail then keep the base name of the interpreter and remove (ignore) the path. This is meant to support Linux paths like `/usr/bin/perl6` that will not be found on Windows, but the base name `perl6` may still be found (on `PATH`). Also remove the extension from the base name. That is, an interpreter given as `perl6.exe` can be replaced with `perl6.bat` if the later is found on `PATH`. This behavior can be disabled with `--no-strip-location` and `--no-strip-extension` options.
+- if all checks fail then use the default command given to `--default-cmd` option. Without `--default-cmd`, attempt to run the (_missing_) interpreter as given, which will then produce an error (from `cmd.exe`, complaining the command is not recognized).
 
 As it is a `.cmd` script, the file type handler will open a console window in order to run the script. This is an issue if the script is a graphical (GUI) application. For this case a non-console version of the file type handler will be needed, that is _not_ provided here (maybe later).
 
