@@ -39,7 +39,10 @@ use constant tests =>
     { script => 'shell_wrong_path_and_ext.ruby', name => 'Wrong shell path and extension without strip exe',
 	opts => { strip_extension => undef }, expect_error => !undef },
     { script => 'shell_wrong_path_and_ext.ruby', name => 'Wrong shell path and extension without strip path and ext',
-	opts => { strip_location => undef, strip_extension => undef }, expect_error => !undef }
+	opts => { strip_location => undef, strip_extension => undef }, expect_error => !undef },
+    { script => 'interpreter_slash_translation.cmake', name => 'Interpreter slash translation' },
+    { script => 'interpreter_path_without_drive.cmake', name => 'Interpreter path without drive' },
+    { script => 'show_cmd_line.cmd', name => 'Built-in cmd command used as interpreter' }
 );
 
 use Test::More tests => scalar(@{[tests]});

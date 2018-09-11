@@ -17,4 +17,3 @@ g = Greeter.new("world")
 # Output "Hello World!"
 g.salute
 
-

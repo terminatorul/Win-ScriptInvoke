@@ -1,4 +1,5 @@
 #!"C:\Program Files\No Such File Or Directory Here\ruby"
+#!"Echo"
 
 # The Greeter class
 class Greeter

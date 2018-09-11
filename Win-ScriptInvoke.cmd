@@ -38,7 +38,7 @@ Echo            multiple times to pass multiple arguments to cmdName.>&2
 Echo.>&2
 Echo    --no-fallback-to-default>&2
 Echo    --fallback-to-default>&2
-Echo            If the #^^! command is not found at all and a --default-cmd is given, invoke that>&2
+Echo            If the #^^!-command is not found at all and a --default-cmd is given, invoke that>&2
 Echo            command to run the script, that is ignore the #^^!-command entirely if it is not>&2
 Echo            usable. The default is --fallback-to-default.>&2
 
@@ -156,15 +156,15 @@ For /F "usebackq tokens=1,* delims=!" %%i In (!SCRIPT_FILE_NAME!) Do (
 	    Rem Echo Args:        !INTERPRETER_ARGS!
 
 	    for %%n In ("/bin/env" "/usr/bin/env") Do (
-		If "%%~n" == "!INTERPRETER!" Call :ParseShebangLine !INTERPRETER_ARGS!
+		If "%%~n" == "!INTERPRETER_FILE_NAME!" Call :ParseShebangLine !INTERPRETER_ARGS!
 	    )
 
-	    Set INTERPR="!INTERPRETER!"
+	    Set INTERPR=!INTERPRETER!
 
 	    If Defined SCRIPT_INVOKE_STRIP_EXTENSION (
-		For %%k In ("!INTERPRETER!") Do (
+		For %%k In (!INTERPRETER!) Do (
 		    If Not x"%%~xk" == x"" (
-			Call :TrimFileExtension "!INTERPRETER!"
+			Call :TrimFileExtension !INTERPRETER!
 			Set INTERPR=!INTERPR! "!TRIMMED!"
 		    )
 		)
@@ -174,39 +174,75 @@ For /F "usebackq tokens=1,* delims=!" %%i In (!SCRIPT_FILE_NAME!) Do (
 		Echo INTERPR: !INTERPR!
 	    )
 
+	    If "!INTERPRETER_FILE_NAME:\=;!" == "!INTERPRETER_FILE_NAME!" (
+		If "!INTERPRETER_FILE_NAME::=;!" == "!INTERPRETER_FILE_NAME!" (
+		    Rem No path to interpreter, only name given, like: #!cmake
+		    For %%w In (!INTERPR!) Do (
+			For %%y In ("." "%PATH:;=" "%") Do (
+			    For %%x In ("" "%PATHEXT:;=" "%") Do (
+				If Exist "%%~y\%%~w%%~x" (
+				    Set INTERPRETER="%%~y\%%~w%%~x"
+				    GoTo :RunInterpreterWithArgs
+				)
+			    )
+			)
+		    )
+		)
+
+		GoTo :StripLocation
+	    )
+	    
+	    Rem Some path to interpreter given, like #!\Local\bin\sed or #!C:sed.exe
+	    Rem Skip PATH search
 	    For %%w In (!INTERPR!) Do (
-		For %%y In ("." "%PATH:;=" "%") Do (
-		    For %%x In ("" "%PATHEXT:;=" "%") Do (
-			If Exist "%%~y\%%~w%%~x" (
-			    Set INTERPRETER=%%~y\%%~w%%~x
-			    GoTo :RunInterpreterWithArgs
+		For %%x In ("" "%PATHEXT:;=" "%") Do (
+		    If Exist "%%~w%%~x" (
+			Set INTERPRETER="%%~w%%~x"
+			GoTo :RunInterpreterWithArgs
+		    )
+		)
+	    )
+
+:StripLocation
+	    If Defined SCRIPT_INVOKE_STRIP_LOCATION (
+		Call :GetBaseName !INTERPRETER!
+
+		For %%y In (!INTERPRETER!) Do (
+		    If /I Not "!BASENAME!" == "%%~y" (
+			Set INTERPR="!BASENAME!"
+
+			If Defined SCRIPT_INVOKE_STRIP_EXTENSION (
+			    For %%k In ("!BASENAME!") Do (
+				If Not x"%%~xk" == x"" (
+				    Call :TrimFileExtension "!BASENAME!"
+				    Set INTERPR=!INTERPR! "!TRIMMED!"
+				)
+			    )
+			)
+
+			For %%w In (!INTERPR!) Do (
+			    For %%k In ("." "%PATH:;=" "%") Do (
+				For %%l In ("" "%PATHEXT:;=" "%") Do (
+				    If Exist "%%~k\%%~w%%~l" (
+					Set INTERPRETER="%%~k\%%~w%%~l"
+					GoTo :RunInterpreterWithArgs
+				    )
+				)
+			    )
 			)
 		    )
 		)
 	    )
 
-	    If Defined SCRIPT_INVOKE_STRIP_LOCATION (
-		Call :GetBaseName "!INTERPRETER!"
-
-		If /I Not "!BASENAME!" == "!INTERPRETER!" (
-		    Set INTERPR="!BASENAME!"
-
-		    If Defined SCRIPT_INVOKE_STRIP_EXTENSION (
-			For %%k In ("!BASENAME!") Do (
-			    If Not x"%%~xk" == x"" (
-				Call :TrimFileExtension "!BASENAME!"
-				Set INTERPR=!INTERPR! "!TRIMMED!"
-			    )
-			)
-		    )
-
-		    For %%w In (!INTERPR!) Do (
-			For %%k In ("." "%PATH:;=" "%") Do (
-			    For %%l In ("" "%PATHEXT:;=" "%") Do (
-				If Exist "%%~k\%%~w%%~l" (
-				    Set INTERPRETER=%%~k\%%~w%%~l
-				    GoTo :RunInterpreterWithArgs
-				)
+	    Rem Check for a built-in cmd command
+	    For /F "usebackq delims=`" %%l In (`help`) Do (
+		Set LINE=%%l
+		If Not "!LINE:~0,1!" == " " (
+		    For %%y in (!INTERPRETER!) Do (
+			For /F %%c In ("!LINE!") Do (
+			    If /I "%%c" == "%%~y" (
+				Set INTERPRETER=%%~y
+				GoTo :RunInterpreterWithArgs
 			    )
 			)
 		    )
@@ -223,6 +259,7 @@ For /F "usebackq tokens=1,* delims=!" %%i In (!SCRIPT_FILE_NAME!) Do (
 	    )
 
 	    Rem Invalid #!-command interpreter, will trigger an error on invocation
+	    Echo !SCRIPT_FILE_NAME!: Bad interpreter !INTERPRETER! >&2
 	    GoTo :RunInterpreterWithArgs
 	)
     )
@@ -234,19 +271,22 @@ For /F "usebackq tokens=1,* delims=!" %%i In (!SCRIPT_FILE_NAME!) Do (
 	GoTo :RunInterpreterWithArgs
     )
 
-    Echo Expected initial #^^! line with script interpreter name for !SCRIPT_FILE_NAME! 
+    Echo Expected initial #^^! line with script interpreter name for !SCRIPT_FILE_NAME! >&2
     Exit /B 255
 )
 
 :ParseShebangLine
 Set INTERPRETER=
+Set INTERPRETER_FILE_NAME=
 Set INTERPRETER_ARGS=
 
 For %%i in (%*) Do (
     If Defined INTERPRETER (
 	Set INTERPRETER_ARGS=!INTERPRETER_ARGS! %%i
     ) Else (
-	Set INTERPRETER=%%~i
+	Set INTERPRETER=%%i
+	Set INTERPRETER=!INTERPRETER:/=\!
+	Set INTERPRETER_FILE_NAME=%%~i
     )
 )
 GoTo :EOF
@@ -279,14 +319,14 @@ If "!TRIMMED:~-1!" == "." (
     GoTo :TrimLastChar
 )
 If Defined SCRIPT_INVOKER_DEBUG (
-    Echo "Trimmed name: !TRIMMED!
+    Echo Trimmed name: !TRIMMED!
 )
 GoTo :EOF
 
 :RunInterpreterWithArgs
 If Defined SCRIPT_INVOKER_DEBUG (
-    Echo Running shebang line "!INTERPRETER!" !INTERPRETER_ARGS! !SCRIPT_COMMAND_LINE!
+    Echo Running shebang line !INTERPRETER! !INTERPRETER_ARGS! !SCRIPT_COMMAND_LINE!
 )
-"!INTERPRETER!" !INTERPRETER_ARGS! !SCRIPT_COMMAND_LINE!
+!INTERPRETER! !INTERPRETER_ARGS! !SCRIPT_COMMAND_LINE!
 Exit /B %ErrorLevel%
 GoTo :EOF
