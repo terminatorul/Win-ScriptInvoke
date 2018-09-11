@@ -152,8 +152,26 @@ For /F "usebackq tokens=1,* delims=!" %%i In (!SCRIPT_FILE_NAME!) Do (
 	    Rem Echo "Found shebang line: %%i^!%%j"
 
 	    Call :ParseShebangLine %%j
-	    Rem Echo Interpreter: !INTERPRETER!
-	    Rem Echo Args:        !INTERPRETER_ARGS!
+
+	    If Defined SCRIPT_INVOKER_DEBUG (
+		Echo Interpreter: !INTERPRETER!
+                Echo Args:        !INTERPRETER_ARGS!
+	    )
+
+	    Rem Check for a built-in cmd command
+	    For /F "usebackq delims=`" %%l In (`help`) Do (
+		Set LINE=%%l
+		If Not "!LINE:~0,1!" == " " (
+		    For %%y in (!INTERPRETER!) Do (
+			For /F %%c In ("!LINE!") Do (
+			    If /I "%%c" == "%%~y" (
+				Set INTERPRETER=%%~y
+				GoTo :RunInterpreterWithArgs
+			    )
+			)
+		    )
+		)
+	    )
 
 	    for %%n In ("/bin/env" "/usr/bin/env") Do (
 		If "%%~n" == "!INTERPRETER_FILE_NAME!" Call :ParseShebangLine !INTERPRETER_ARGS!
@@ -228,21 +246,6 @@ For /F "usebackq tokens=1,* delims=!" %%i In (!SCRIPT_FILE_NAME!) Do (
 					GoTo :RunInterpreterWithArgs
 				    )
 				)
-			    )
-			)
-		    )
-		)
-	    )
-
-	    Rem Check for a built-in cmd command
-	    For /F "usebackq delims=`" %%l In (`help`) Do (
-		Set LINE=%%l
-		If Not "!LINE:~0,1!" == " " (
-		    For %%y in (!INTERPRETER!) Do (
-			For /F %%c In ("!LINE!") Do (
-			    If /I "%%c" == "%%~y" (
-				Set INTERPRETER=%%~y
-				GoTo :RunInterpreterWithArgs
 			    )
 			)
 		    )

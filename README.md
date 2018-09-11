@@ -99,13 +99,13 @@ Expected initial #! line with script interpreter name for <scriptFileName.ext>
 The way the file type handler checks the interpreter from shebang line is:
 - separate the line into interpreter pathname and an optional (additional) argument. There can be no more the one such argument on a shebang line for Linux systems, so your scripts should follow this limit.
 - the interpreter name can be quoted to include file names with spaces. Same for optional arguments
+- check for a cmd built-in command as the interpreter (invoke `help` to list the built-ins and search that list) and run it if found
 - if the interpreter is `/bin/env` or `/usr/bin/env`, it is ignored and the following argument is used instead. This use case allows UNIX systems to pick an interpreter from anywhere on  `PATH`, while still starting the shebang line with an absolute file name. See the [env](http://pubs.opengroup.org/onlinepubs/9699919799/utilities/env.html) command in The Open Group specification.
 - check if the given interpreter exists as a file name, and invoke it if so
 - check if any extensions from `PATHEXT` list can be appended to the interpreter name, so it can be found as a file name
 - search the given interpreter on system `PATH`, and for each path:
     * append every extension from `PATHEXT` in turn and see if the resulting name can be found. These checks allow you to use a shebang line like `#!perl`, and then `perl.exe` can be found (the same process used by `cmd.exe`).
 - if above steps fail then keep the base name of the interpreter and remove (ignore) the path. This is meant to support Linux paths like `/usr/bin/perl6` that will not be found on Windows, but the base name `perl6` may still be found (on `PATH`). Also remove the extension from the base name. That is, an interpreter given as `perl6.exe` can be replaced with `perl6.bat` if the later is found on `PATH`. This behavior can be disabled with `--no-strip-location` and `--no-strip-extension` options.
-- check for a cmd built-in command (invoke `help` to list the built-ins and search that list)
 - if all checks fail then use the default command given to `--default-cmd` option. Without `--default-cmd`, display a message like `scriptName.cmd: Bad interpreter: <interpreter name>` and attempt to run the (_missing_) interpreter as given, which will then produce an error (from `cmd.exe`, complaining the command is not recognized).
 
 As it is a `.cmd` script, the file type handler will open a console window in order to run the script. This is an issue if the script is a graphical (GUI) application. For this case a non-console version of the file type handler will be needed, that is _not_ provided here (maybe later).
