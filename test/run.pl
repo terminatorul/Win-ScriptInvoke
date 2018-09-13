@@ -5,7 +5,7 @@ use feature 'say';
 use English;
 use File::Spec;
 use constant SCRIPT_DIR => File::Spec->catpath((File::Spec->splitpath($PROGRAM_NAME))[0..1]);
-use constant TEST_SCRIPT_NAME => 'win_script_invoke.cmd';
+use constant TEST_SCRIPT_NAME => 'Win-ScriptInvoke.cmd';
 use constant TEST_CMD => (File::Spec->catfile(SCRIPT_DIR, File::Spec->updir(), TEST_SCRIPT_NAME));
 
 # test files

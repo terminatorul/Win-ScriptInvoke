@@ -28,15 +28,15 @@ In this case the shebang line can select the appropriate interpreter, while the 
 
 ## Installation
 To install the file type handler you should:
-- choose a system-wide installation directory and clone or copy the script there. I used `C:\Local\bin\win_script_invoke.cmd`. You could add the location to your `PATH`, and you should no longer need the absolute file name.
+- choose a system-wide installation directory and clone or copy the script there. I used `C:\Local\bin\Win-ScriptInvoke.cmd`.
 - choose the file extension, for example `.pl` for perl scripts, and a name for the file type, like `PerlFamilyScript`.
 - remember to check that the file extension appears in `PATHEXT` environment variable. Append the extension, separated with `;`, if needed, like: `setx PATHEXT "%PATHEXT%;.pl"`.
 - start a `cmd` window as Administrator and run the below commands:
 ```
     Assoc .pl=PerlFamilyScript
-    FType PerlFamilyScript="C:\Local\bin\win_script_invoke.cmd" --default-cmd perl -- "%1" %*
+    FType PerlFamilyScript="C:\Local\bin\Win-ScriptInvoke.cmd" --default-cmd perl -- "%1" %*
 ```
-That's it. Windows may prompt you on the first use of the modified file tpye (with new file handler), to confirm file type change. Open a non-admin console and run a script:
+That's it. Open a non-admin console and run a script:
 ```
 scriptName.pl
 ```
@@ -45,12 +45,14 @@ or just
 scriptName
 ```
 
-The file type handler (`win_script_invoke.cmd`) will read the shebang line from the script and use the given interpreter to run it. A number of command-line options are available _for the file type handler_:
+Windows may prompt you on the first use of the modified file type, to confirm file type change, so select the Win-ScriptInvoke handler then.
+
+The file type handler will read the shebang line from the script and use the given interpreter to run it. A number of command-line options are available _for the file type handler_:
 ```
-F:\Local\bin>win_script_invoke.cmd
+F:\Local\bin>Win-ScriptInvoke.cmd
 
 Syntax:
-    "win_script_invoke.cmd" [--options]... -- ScriptFile.ext [script-args]...
+    "Win-ScriptInvoke.cmd" [--options]... -- ScriptFile.ext [script-args]...
 
 Read first line from ScriptFile.ext and use it as the command to run the script.
 
