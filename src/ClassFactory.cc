@@ -1,5 +1,5 @@
+#include "ContextMenuHandler.hh"
 #include "ClassFactory.hh"
-#include "ContextMenu.hh"
 
 static ClassFactory *pClassFactory = nullptr;
 
@@ -46,7 +46,7 @@ ULONG WINAPI ClassFactory::Release()
     return ref_count;
 }
 
-HRESULT WINAPI ClassFacgtory::QueryInterface(REFIID refIID, void **ppInterface)
+HRESULT WINAPI ClassFactory::QueryInterface(REFIID refIID, void **ppInterface)
 {
     if (pUnknown)
 	return pUnknown->QueryInterface(refIID, ppInterface);
@@ -85,35 +85,19 @@ HRESULT WINAPI ClassFactory::LockServer(BOOL fLock)
 HRESULT WINAPI ClassFactory::CreateInstance(IUnknown *pUnknownOuter, REFIID refIID, void **ppInstance)
 try
 {
-    if (!ppInstance)
+    if (!ppInstance || (pUnknownOuter && !IsEqualIID(refIID, IID_IUnknown))
 	return E_INVALIDARG;
 
-    if (IsEqualIID(refIID, IID_IUnknown)
-	*ppInstance = static_cast<IUnknown *>(ContextMenuHandler::createInstance(pUnknownOuter));
-    else
+    ContextMenuHandler *pInstance = ContextMenuHandler::createInstance(pUnknownOuter);
+    HRESULT hr = pInstance->QueryInterface(refIID, ppInstance);
+
+    if (FAILED(hr))
     {
-	if (pUnknownOuter)
-	    return E_INVALIDARG;
-
-	if (IsEqualIID(refIID, IID_IContextMenu))
-	    *ppInstance = static_cast<IContextMenu *>(ContextMenuHandler::createInstance(pUnknownOuter));
-	else
-	    if (IsEqualIID(refIID, IID_IHandlerInfo))
-		*ppInstance = static_cast<IHandlerInfo *>(ContextMenuHandler::createInstance(pUnknownOuter));
-	    else
-		if (IsEqualIID(refIID, IID_IShellExtInit))
-		    *ppInstance = static_cast<IShellExtInit *>(ContextMenuHandler::createInstance(pUnknownOuter));
-		else
-		{
-		    *ppInstance = nullptr;
-
-		    return E_NOINTERFACE;
-		}
+	*ppInstance = nullptr;
+	pInstance->Release();
     }
 
-    (*ppInstance)->AddRef();
-
-    return S_OK;
+    return hr
 }
 catch(std::bad_alloc const &)
 {

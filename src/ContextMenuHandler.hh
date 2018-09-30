@@ -8,10 +8,13 @@
 class ContextMenuHandler: public IUnknown
 {
 protected:
-    std::uint_least32_t ref_count = UINT32_C(0);
-    IUnknown	       *pUnknown;
+    ULONG	    ref_count = UINT32_C(0);
+    IUnknown	   *pUnknownOuter;
+    IDataObject	   *pDataObject = nullptr;
+    void	    reset();
+
 public:
-    static const CLSID	    contextMenuClassID;
+    static const CLSID	    ID;
     bool		    canUnloadNow();
     ContextMenuHandler	   *createInstance(IUnknown *pUnknownOuter);
 

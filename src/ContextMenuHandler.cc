@@ -1,81 +1,89 @@
 #include <Objbase.h>
+#include <Shlobjidl.h>
+
 #include "ContextMenuHandler.hh"
 
-static ContextMenu *pContextMenu = nullptr;
+static std::uint_least32_t objectCount = 0;
+static ContextMenuHandler *pContextMenuHandler = nullptr;
 
-bool ContextMenuHandler::CanUnloadNow()
+bool ContextMenuHandler::canUnloadNow()
 {
-    if (pContextMenu)
+    if (objectCount)
+	return false;
+
+    if (pContextMenuHandler)
     {
-	delete pContextMenu;
-	pContextMenu = nullptr;
+	delete pContextMenuHandler;
+	pContextMenuHandler = nullptr;
     }
 
-    return !pContextMenu;
+    return true;
 }
 
-ContextMenuHandler::createInstance()
+// class ID: {D73E09D6-94A9-4D4D-9CE5-612A5E0E397B}
+REFCLSID const ContextMenuHandler::ID = { 0xd73e09d6, 0x94a9, 0x4d4d, { 0x9c, 0xe5, 0x61, 0x2a, 0x5e, 0xe, 0x39, 0x7b } };
+
+ContextMenuHandler *ContextMenuHandler::createInstance(IUnknown *pUnknownOuter)
 {
-    if (pContextMenu)
+    ContextMenuHandler *pInstance;
+
+    if (pContextMenuHandler)
     {
-	ContextMenuHandler *pInstance = pContextMenu;
-	pContextMenu = nullptr;
-
-	return pInstance;
+	pInstance = pContextMenu;
+	pInstane->pUnknownOuter = pUnknownOuter;
+	pContextMenuHandler = nullptr;
     }
+    else
+	pInstance = new ContextMenuHandler(pUnknownOuter);
 
-    return new ContextMenuHandler();
+    objectCount++;
+
+    return pInstance;
 }
 
-// {D73E09D6-94A9-4D4D-9CE5-612A5E0E397B}
-REFCLSID const ContextMenuHandler::contextMenuClassID = { 0xd73e09d6, 0x94a9, 0x4d4d, { 0x9c, 0xe5, 0x61, 0x2a, 0x5e, 0xe, 0x39, 0x7b } };
-
-ULONG WINAPI ClassFactory::AddRef()
+ULONG WINAPI ContextMenuHandler::AddRef()
 {
-    if (pUnknown)
-	return pUnknown->AddRef();
-
-    return (++objectCount, ++ref_count);
+    return ++ref_count;
 }
 
-ULONG WINAPI ClassFactory::Release()
+ULONG WINAPI ContextMenuHandler::Release()
 {
-    if (pUnknown)
-	return pUnknown->Release();
-
     if (ref_count)
     {
+	ref_count--;
+
+	if (ref_count)
+	    return ref_count;
+
+	delete pContextMenuHandler;
+	pContextMenuHandler = this;
+
 	if (objectCount)
 	    objectCount--;
 
-	ref_count--;
-
-	if (lock_count || ref_count)
-	    return ref_count;
-
-	delete pClassFactory;
-	pClassFactory = this;
-
-	return INT32_C(0);
+	return UINT32_C(0);
     }
 
-    return ref_count;
+    return UINT32_C(0);
 }
 
-HRESULT WINAPI ClassFacgtory::QueryInterface(REFIID refIID, void **ppInterface)
+HRESULT WINAPI ContextMenuHandler::QueryInterface(REFIID refIID, void **ppInterface)
 {
-    if (pUnknown)
-	return pUnknown->QueryInterface(refIID, ppInterface);
-
     if (ppInterface)
     {
 	if (IsEqualIID(refIID, IID_IUnknown))
 	    *ppInterface = static_cast<IUnknown *>(this);
 	else
-	    if (IsEqualIID(refIID, IID_IClassFactory))
-		*ppInterface = static_cast<IClassFactory *>(this);
+	    if (IsEqualIID(refIID, IID_IContextMenu))
+		*ppInterface = static_cast<IContextMenu *>(&this->contextMenu);
 	    else
-		return E_NOINTERFACE;
+		if (IsEqualIID(refIID, IID_IHandlerInfo))
+		    *ppInterface = static_cast<IHandlerInfo *>(&this->handlerInfo);
+		else
+		    if (IsEqualIID(refIID, IID_IShellExtInit))
+			*ppInterface = static_cast<IShellExtInit *>(&this->shellExtInit);
+		    else
+			return E_NOINTERFACE;
 
 	(*ppInterface)->AddRef();
 
@@ -85,3 +93,16 @@ HRESULT WINAPI ClassFacgtory::QueryInterface(REFIID refIID, void **ppInterface)
     return E_POINTER;
 }
 
+void ContextMenuHandler::reset()
+{
+    if (pDataObject)
+    {
+	pDataObject->Release();
+	pDataObject = nullptr;
+    }
+}
+
+ContextMenuHandler::ContextMenuHandler(IUnkown *pUnknownOuter)
+    : pUnknownOuter(pUnknownOuter)
+{
+}

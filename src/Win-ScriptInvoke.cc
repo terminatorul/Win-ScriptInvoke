@@ -9,11 +9,9 @@
 #include "ClassFactory.hh"
 #include "Win-ScriptInvoke.hh"
 
-std::uint_least32_t objectCount = 0;
-
 HRESULT dllexport WINAPI DllCanUnloadNow()
 {
-    if (!objectCount && ClassFactory::canUnloadNow() && ContextMenuHandler::canUnloadNow())
+    if (ClassFactory::canUnloadNow() && ContextMenuHandler::canUnloadNow())
 	return S_OK;
     
     return S_FALSE;
@@ -25,7 +23,7 @@ try
     if (!ppIClassFactory)
 	return E_INVALIDARG;
 
-    if (IsEqualCLSID(refClsID, ContextMenuHandler::contextMenuClassID))
+    if (IsEqualCLSID(refClsID, ContextMenuHandler::ID))
     {
 	*ppIClassFactory = static_cast<IClassFactory *>(ClassFactory::createInstance());
 

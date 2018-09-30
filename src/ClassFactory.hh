@@ -15,7 +15,6 @@ public:
     ClassFactory	  *createInstance();
 
     // IUnknown
-    IUnknown		  *pUnknown = nullptr;
     virtual ULONG   WINAPI AddRef() override;
     virtual HRESULT WINAPI QueryInterface(REFIID refIID, void **ppvObject) override;
     virtual ULONG   WINAPI Release() override;

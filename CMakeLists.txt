@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.10);
 
 set(WIN_SCRIPT_INVOKE_SRCS
+	src/HandlerInfo.cc
+	src/ShellExtInit.cc
+	src/ContextMenu.cc
 	src/ContextMenuHandler.hh
 	src/ContextMenuHandler.cc
 	src/ClassFactory.hh

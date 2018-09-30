@@ -3,6 +3,13 @@
 
 #include <cstdint>
 
-extern std::uint_least32_t objectCount;
+#include <GuidDef.h>
+#include <Objbase.h>
+
+extern HRESULT dllexport WINAPI DllCanUnloadNow();
+extern HRESULT dllexport WINAPI DllGetClassObject(REFCLSID refClsID, REFIID refIID, LPVOID *ppIClassFactory);
+
+// extern WINAPI DllRegisterServer();
+// extern WINAPI DllUnregisterServer();
 
 #endif // defined(WIN_SCRIPT_INVOKE)
