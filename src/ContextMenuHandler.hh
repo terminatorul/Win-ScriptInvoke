@@ -4,6 +4,9 @@
 
 #include <Objbase.h>
 #include <Shlobjidl.h>
+#include <propsys.h>
+
+#include "ScriptFile.hh"
 
 class ContextMenuHandler: public IUnknown
 {
@@ -12,6 +15,7 @@ protected:
     IUnknown	   *pUnknownOuter;
     IDataObject	   *pDataObject = nullptr;
     void	    reset();
+    ScriptFile	    scriptFile;
 
 public:
     static const CLSID	    ID;
@@ -19,9 +23,9 @@ public:
     ContextMenuHandler	   *createInstance(IUnknown *pUnknownOuter);
 
     // IUnknown
-    virtual ULONG   WINAPI AddRef() override;
-    virtual HRESULT WINAPI QueryInterface(REFIID refIID, void **ppvInterface) override;
-    virtual ULONG   WINAPI Release() override;
+    STDMETHOD_(ULONG, AddRef)() override;
+    STDMETHOD_(ULONG, Release)() override;
+    STDMETHOD(QueryInterface)(REFIID refIID, void **ppvInterface) override;
 
     class ContextMenu: public IContextMenu
     {
@@ -31,16 +35,18 @@ public:
     public:
 	ContextMenu(ContextMenuHandler &handler);
 
-	virtual ULONG   WINAPI AddRef() override;
-	virtual HRESULT WINAPI QueryInterface(REFIID refIID, void **ppvInterface) override;
-	virtual ULONG   WINAPI Release() override;
+	STDMETHOD_(ULONG, AddRef)() override;
+	STDMETHOD_(ULONG, Release)() override;
+	STDMETHOD(QueryInterface)(REFIID refIID, void **ppvInterface) override;
 
 	// IContextMenu
-	virtual HRESULT WINAPI GetCommandString(UINT_PTR iCmd, UINT uType, UINT *pReserved, CHAR *pszName, UINT cchMax) override;
-	virtual HRESULT WINAPI InvokeCommand(CMINVOKECOMMANDINFO *pInvokeCommandInfo) override;
-	virtual HRESULT WINAPI QueryContextMenu(HMENU hMenu, UINT indexMenu, UINT idCmdFirst, UINT idCmdLast, UINT uFlags) override;
+	STDMETHOD(GetCommandString)(UINT_PTR iCmd, UINT uType, UINT *pReserved, CHAR *pszName, UINT cchMax) override;
+	STDMETHOD(InvokeCommand)(CMINVOKECOMMANDINFO *pInvokeCommandInfo) override;
+	STDMETHOD(QueryContextMenu)(HMENU hMenu, UINT indexMenu, UINT idCmdFirst, UINT idCmdLast, UINT uFlags) override;
     }
 	contextMenu;
+
+    friend class ContextMenuHandler::ContextMenu;
 
     class HandlerInfo: public IHandlerInfo
     {
@@ -49,16 +55,18 @@ public:
     public:
 	HandlerInfo(ContextMenuHandler &handler);
 
-	virtual ULONG   WINAPI AddRef() override;
-	virtual HRESULT WINAPI QueryInterface(REFIID refIID, void **ppvInterface) override;
-	virtual ULONG   WINAPI Release() override;
+	STDMETHOD_(ULONG, AddRef)() override;
+	STDMETHOD_(ULONG, Release)() override;
+	STDMETHOD(QueryInterface)(REFIID refIID, void **ppvInterface) override;
 
 	// IHandlerInfo
-	virtual HRESULT WINAPI GetApplicationDisplayName(LPWSTR *displayName) override;
-	virtual HRESULT WINAPI GetApplicationIconReference(LPWSTR *iconReference) override;
-	virtual HRESULT WINAPI GetApplicationPublisher(LPWSTR *publisher) override;
+	STDMETHOD(GetApplicationDisplayName)(LPWSTR *displayName) override;
+	STDMETHOD(GetApplicationIconReference)(LPWSTR *iconReference) override;
+	STDMETHOD(GetApplicationPublisher)(LPWSTR *publisher) override;
     }
 	handlerInfo;
+
+    friend class ContextMenuHandler::HandlerInfo;
 
     class ShellExtInit: public IShellExtInit
     {
@@ -67,16 +75,37 @@ public:
     public:
 	ShellExtInit(ContextMenuHandler &handler);
 
-	virtual ULONG   WINAPI AddRef() override;
-	virtual HRESULT WINAPI QueryInterface(REFIID refIID, void **ppvInterface) override;
-	virtual ULONG   WINAPI Release() override;
+	STDMETHOD_(ULONG, AddRef)() override;
+	STDMETHOD_(ULONG, Release)() override;
+	STDMETHOD(QueryInterface)(REFIID refIID, void **ppvInterface) override;
 	//
 	// IShellExtInit
-	virtual HRESULT WINAPI Initialize(PCIDLIST_ABSOLUTE pidlFolder, IDataObject *pdtobj, HKEY hkeyProgID) override;
+	STDMETHOD(Initialize)(PCIDLIST_ABSOLUTE pidlFolder, IDataObject *pdtobj, HKEY hkeyProgID) override;
     }
 	shellExtInit;
 
+    friend class ContextMenuHandler::ShellExtInit;
+
+    class InitializeWithStream: public IInitializeWithStream
+    {
+    protected:
+	ContextMenuHandler &handler;
+    public:
+	InitializeWithStream(ContextMenuHandler &handler);
+
+	STDMETHOD_(ULONG, AddRef)() override;
+	STDMETHOD_(ULONG, Release)() override;
+	STDMETHOD(QueryInterface)(REFIID refIID, void **ppvInterface) override;
+	//
+	// IInitializeWithStream
+	STDMETHOD(Initialize)(IStream *pStream, DWORD grfMode) override;
+    }
+	initializeWithStream;
+
+    friend class ContextMenuHandler::InitializeWithStream;
+
     ContextMenuHandler(IUnknown *pUnknownOuter = nullptr);
+    ~ContextMenuHandler();
 };
 
 #endif // defined(WIN_SCRIPT_INVOKE_CONTEXT_MENU_HANDLER)

@@ -1,6 +1,9 @@
-#include <Objbase.h>
-
 #include "ContextMenuHandler.hh"
+
+InitializeWithStream::InitializeWithStream(ContextMenuHandler &handler)
+    : handler(handler)
+{
+}
 
 STDMETHODIMP_(ULONG) ContextMenuHandler::ContextMenu::AddRef()
 {
@@ -12,7 +15,11 @@ STDMETHODIMP_(ULONG) ContextMenuHandler::ContextMenu::Release()
     return handler.pUnknownOuter->Release();
 }
 
-STDMETHODIMP ContextMenuHandler::ContextMenu::QueryInterface(REFIID refIID, void **ppInterface)
+STDMETHOD ContextMenuHandler::ContextMenu::QueryInterface(REFIID refIID, void **ppInterface)
 {
     return handler.pUnknownOuter->QueryInterface(refIID, ppInterface);
+}
+
+STDMETHOD ContextMenuHandler::InitializeWithStream::Initialize(IStream *pStream, DWORD)
+{
 }

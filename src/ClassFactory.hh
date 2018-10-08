@@ -15,13 +15,13 @@ public:
     ClassFactory	  *createInstance();
 
     // IUnknown
-    virtual ULONG   WINAPI AddRef() override;
-    virtual HRESULT WINAPI QueryInterface(REFIID refIID, void **ppvObject) override;
-    virtual ULONG   WINAPI Release() override;
+    STDMETHOD_(ULONG, AddRef)() override;
+    STDMETHOD_(ULONG, Release)() override;
+    STDMETHOD(QueryInterface)(REFIID refIID, void **ppvObject) override;
 
     // IClassFactory
-    virtual HRESULT WINAPI CreateInstance(IUnknown *pUnknownOuter, REFIID refIID, void **ppvInstance) override;
-    virtual HRESULT WINAPI LockServer(BOOL fLock) override;
+    STDMETHOD(CreateInstance)(IUnknown *pUnknownOuter, REFIID refIID, void **ppvInstance) override;
+    STDMETHOD(LockServer)(BOOL fLock) override;
 };
 
 #endif // defined(WIN_SCRIPT_INVOKE_CLASS_FACTORY)

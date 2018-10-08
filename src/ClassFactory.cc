@@ -1,3 +1,4 @@
+#include <Objbase.h>
 #include "ContextMenuHandler.hh"
 #include "ClassFactory.hh"
 
@@ -22,7 +23,7 @@ ClassFactory *ClassFactory::createInstance()
     return pInstance;
 }
 
-ULONG WINAPI ClassFactory::AddRef()
+STDMETHODIMP_(ULONG) ClassFactory::AddRef()
 {
     if (pUnknown)
 	return pUnknown->AddRef();
@@ -30,7 +31,7 @@ ULONG WINAPI ClassFactory::AddRef()
     return (++objectCount, ++ref_count);
 }
 
-ULONG WINAPI ClassFactory::Release()
+STDMETHODIMP_(ULONG) ClassFactory::Release()
 {
     if (pUnknown)
 	return pUnknown->Release();
@@ -46,7 +47,7 @@ ULONG WINAPI ClassFactory::Release()
     return ref_count;
 }
 
-HRESULT WINAPI ClassFactory::QueryInterface(REFIID refIID, void **ppInterface)
+STDMETHODIMP ClassFactory::QueryInterface(REFIID refIID, void **ppInterface)
 {
     if (pUnknown)
 	return pUnknown->QueryInterface(refIID, ppInterface);
@@ -69,7 +70,7 @@ HRESULT WINAPI ClassFactory::QueryInterface(REFIID refIID, void **ppInterface)
     return E_POINTER;
 }
 
-HRESULT WINAPI ClassFactory::LockServer(BOOL fLock)
+STDMETHODIMP ClassFactory::LockServer(BOOL fLock)
 {
     if (fLock)
 	lock_count++;
@@ -82,7 +83,7 @@ HRESULT WINAPI ClassFactory::LockServer(BOOL fLock)
     return S_OK;
 }
 
-HRESULT WINAPI ClassFactory::CreateInstance(IUnknown *pUnknownOuter, REFIID refIID, void **ppInstance)
+STDMETHODIMP ClassFactory::CreateInstance(IUnknown *pUnknownOuter, REFIID refIID, void **ppInstance)
 try
 {
     if (!ppInstance || (pUnknownOuter && !IsEqualIID(refIID, IID_IUnknown))

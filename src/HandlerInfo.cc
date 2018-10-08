@@ -2,34 +2,25 @@
 
 #include "ContextMenuHandler.hh"
 
-ULONG WINAPI ContextMenuHandler::HandlerInfo::AddRef()
+STDMETHODIMP_(ULONG) ContextMenuHandler::HandlerInfo::AddRef()
 {
-    if (handler.pUnknownOuter)
-	return handler.pUnknownOuter->AddRef();
-
-    return handler.AddRef();
+    return handler.pUnknownOuter->AddRef();
 }
 
-ULONG WINAPI ContextMenuHandler::HandlerInfo::Release()
+STDMETHODIMP_(ULONG) ContextMenuHandler::HandlerInfo::Release()
 {
-    if (handler.pUnknownOuter)
-	handler.pUnknownOuter->Release();
-
-    return handler.Release();
+    return handler.pUnknownOuter->Release();
 }
 
-HRESULT WINAPI ContextMenuHandler::HandlerInfo::QueryInterface(REFIID refIID, void **ppInterface)
+STDMETHODIMP ContextMenuHandler::HandlerInfo::QueryInterface(REFIID refIID, void **ppInterface)
 {
-    if (handler.pUnknownOuter)
-	handler.pUnknownOuter->QueryInterface(refIID, ppInterface);
-
-    return handler.QueryInterface(refIID, ppInterface);
+    return handler.pUnknownOuter->QueryInterface(refIID, ppInterface);
 }
 
-WCHAR applicationDisplayName[] = L"Win-ScriptInvoke",
-      applicationPublisher[] = L"Timothy Madden <terminatorul@gmail.com>";
+WCHAR applicationDisplayName[] = OLESTR("Win-ScriptInvoke"),
+      applicationPublisher[] = OLESTR("Timothy Madden <terminatorul@gmail.com>");
 
-HRESULT WINAPI ContextMenuHandler::HandlerInfo::GetApplicationDisplayName(LPWSTR *displayName)
+STDMETHODIMP ContextMenuHandler::HandlerInfo::GetApplicationDisplayName(LPWSTR *displayName)
 {
     WCHAR *pStr = applicationDisplayName;
 
@@ -41,12 +32,12 @@ HRESULT WINAPI ContextMenuHandler::HandlerInfo::GetApplicationDisplayName(LPWSTR
     return S_OK;
 }
 
-HRESULT WINAPI ContextMenuHandler::HandlerInfo::GetApplicationIconReference(LPWSTR *iconReference)
+STDMETHODIMP ContextMenuHandler::HandlerInfo::GetApplicationIconReference(LPWSTR *iconReference)
 {
     return S_NOTIMPL;
 }
 
-HRESULT WINAPI ContextMenuHandler::HandlerInfo::GetApplicationPublisher(LPWSTR *publisher)
+STDMETHODIMP ContextMenuHandler::HandlerInfo::GetApplicationPublisher(LPWSTR *publisher)
 {
     WCHAR *pStr = applicationPublisher;
 

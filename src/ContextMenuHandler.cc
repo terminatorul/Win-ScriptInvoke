@@ -6,6 +6,16 @@
 static std::uint_least32_t objectCount = 0;
 static ContextMenuHandler *pContextMenuHandler = nullptr;
 
+ContextMenuHandler::~ContextMenuHandler()
+{
+    if (pDataObject)
+    {
+	pDataObject->Release();
+	pDataObject = nullptr;
+    }
+
+}
+
 bool ContextMenuHandler::canUnloadNow()
 {
     if (objectCount)
@@ -103,6 +113,6 @@ void ContextMenuHandler::reset()
 }
 
 ContextMenuHandler::ContextMenuHandler(IUnkown *pUnknownOuter)
-    : pUnknownOuter(pUnknownOuter)
+    : pUnknownOuter(pUnknownOuter ? pUnknownOuter : this)
 {
 }

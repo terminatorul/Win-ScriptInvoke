@@ -1,38 +1,61 @@
 #include <Windows.h>
 #include <Objbase.h>
 
+#include <wtypes.h>
+#include <Ole2.h>
+#include <objidl.h>
+#include <shellapi.h>
+
+#include <cstdlib>
+#include <vector>
+
 #include "ContextMenuHandler.hh"
 
-ULONG WINAPI ContextMenuHandler::ShellExtInit::AddRef()
+STDMETHODIMP_(ULONG) ContextMenuHandler::ShellExtInit::AddRef()
 {
-    if (handler.pUnknownOuter)
-	return handler.pUnknownOuter->AddRef();
-
-    return handler.AddRef();
+    return handler.pUnknownOuter->AddRef();
 }
 
-ULONG WINAPI ContextMenuHandler::ShellExtInit::Release()
+STDMETHODIMP_(ULONG) ContextMenuHandler::ShellExtInit::Release()
 {
-    if (handler.pUnknownOuter)
-	handler.pUnknownOuter->Release();
-
-    return handler.Release();
+    return handler.pUnknownOuter->Release();
 }
 
-HRESULT WINAPI ContextMenuHandler::ShellExtInit::QueryInterface(REFIID refIID, void **ppInterface)
+STDMETHODIMP ContextMenuHandler::ShellExtInit::QueryInterface(REFIID refIID, void **ppInterface)
 {
-    if (handler.pUnknownOuter)
-	handler.pUnknownOuter->QueryInterface(refIID, ppInterface);
-
-    return handler.QueryInterface(refIID, ppInterface);
+    return handler.pUnknownOuter->QueryInterface(refIID, ppInterface);
 }
 
-
-HRESULT WINAPI ContextMenuHandler::ShellExtInit::Initialize(PCIDLIST_ABSOLUTE, IDataObject *pdtobj, HKEY)
+STDMETHODIMP ContextMenuHandler::ShellExtInit::Initialize(PCIDLIST_ABSOLUTE, IDataObject *pdtobj, HKEY)
 {
-    if (pDataObject)
-	pDataObject->Release();
+    if (handler.pDataObject)
+	handler.pDataObject->Release();
 
-    pDataObject = pdtobj;
-    pDataObject->AddRef();
+    handler.pDataObject = pdtobj;
+    handler.pDataObject->AddRef();
+
+    STGMEDIUM storageMedium = { };
+    FORMATETC format = { .cfFormat = CF_HDROP, ptd = nullptr, dwAspect = DVASPECT_CONTENT,
+			    .lindex = -1, .tymed = TYMED_HGLOBAL };
+
+    if (SUCCEEDED(pdtobj->GetData(&format, &storageMedium))
+	    &&
+	DragQueryFileW(static_cast<HDROP>(storageMedium.hGlobal), static_cast<UINT>(-1), nullptr, 0))
+    {
+	std::size_t charCount = DragQueryFileW(static_cast<HDROP>(storageMedium.hGlobal), 0, nullptr, 0);
+
+	if (charCount)
+	{
+	    std::vector<wchar_t> fileName(charCount + 1);
+	    charCount = DragQueryFileW(static_cast<HDROP>(storageMedium.hGlobal), 0, fileName.data(), fileName.size());
+
+	    if (charCount && charCount <= fileName.size())
+	    {
+		handler.scriptFile = ScriptFile(fileName.data());
+		return S_OK;
+	    }
+	}
+    }
+
+    return S_FALSE;
 }

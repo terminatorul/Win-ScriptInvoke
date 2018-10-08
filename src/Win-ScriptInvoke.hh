@@ -6,9 +6,10 @@
 #include <GuidDef.h>
 #include <Objbase.h>
 
-extern HRESULT dllexport WINAPI DllCanUnloadNow();
-extern HRESULT dllexport WINAPI DllGetClassObject(REFCLSID refClsID, REFIID refIID, LPVOID *ppIClassFactory);
+__declspec(dllexport) extern HRESULT CALLBACK DllCanUnloadNow();
+__declspec(dllexport) extern HRESULT CALLBACK DllGetClassObject(REFCLSID refClsID, REFIID refIID, LPVOID *ppIClassFactory);
 
+// extern BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved);
 // extern WINAPI DllRegisterServer();
 // extern WINAPI DllUnregisterServer();
 

@@ -1,15 +1,14 @@
-#include <cstdint>
-#include <new>
-
 #include <GuidDef.h>
 #include <Objbase.h>
 #include <Unknown.h>
+
+#include <new>
 
 #include "ContextMenuHandler.hh"
 #include "ClassFactory.hh"
 #include "Win-ScriptInvoke.hh"
 
-HRESULT dllexport WINAPI DllCanUnloadNow()
+__declspec(dllexport) HRESULT CALLBACK DllCanUnloadNow()
 {
     if (ClassFactory::canUnloadNow() && ContextMenuHandler::canUnloadNow())
 	return S_OK;
@@ -17,7 +16,7 @@ HRESULT dllexport WINAPI DllCanUnloadNow()
     return S_FALSE;
 }
 
-HRESULT dllexport WINAPI DllGetClassObject(REFCLSID refClsID, REFIID refIID, LPVOID *ppIClassFactory)
+__declspec(dllexport) HRESULT CALLBACK DllGetClassObject(REFCLSID refClsID, REFIID refIID, LPVOID *ppIClassFactory)
 try
 {
     if (!ppIClassFactory)
