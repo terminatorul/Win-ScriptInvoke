@@ -77,7 +77,7 @@ Options are:
            the .exe/.bat/... file extension on the shebang line.
 
    --scan-line "line text"
-           Scan the first 10 lines of the script for a line that reads "line text", and if found
+           Scan the first lines of the script for a line that reads "line text", and if found
            use the interpreter given with --spcific-cmd and --specific-cmd-arg
 
    --scan-line-count "25"
