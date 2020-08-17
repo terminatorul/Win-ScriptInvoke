@@ -35,7 +35,7 @@ Echo            use the interpreter given with --spcific-cmd and --specific-cmd-
 Echo.>&2
 Echo    --scan-line-count "25">&2
 Echo            Gives the number of initial lines in the script that will be scanned to look for the>&2
-Echo            "line text" given with --scan-line. Default is to scan initial 50 lines., to account>&2
+Echo            "line text" given with --scan-line. Default is to scan initial 50 lines, to account>&2
 Echo            for licensing headers that sometimes clutter source code files.>&2
 Echo.>&2
 Echo    --specific-cmd "specificCmd.exe">&2
@@ -64,7 +64,7 @@ Exit /B 254
 
 :ParseCommandLine
 Rem Parse command line
-If x"%1" == x"" (
+If x"%~1" == x"" (
     GoTo :ShowSyntax
 )
 
@@ -172,7 +172,7 @@ Set SCRIPT_COMMAND_LINE=!SCRIPT_FILE_NAME!
 Shift
 
 :ParseScriptOption
-If Not x%1 == x (
+If Not x"%~1" == x"" (
     Set SCRIPT_COMMAND_LINE=!SCRIPT_COMMAND_LINE! %1
     Shift
     GoTo :ParseScriptOption
