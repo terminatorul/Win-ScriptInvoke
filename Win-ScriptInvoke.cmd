@@ -43,7 +43,7 @@ Echo            Use "specificCmd.exe" to runt the script, if a line was found in
 Echo            script that reads like the text given with --scan-line>&2
 Echo.>&2
 Echo    --specific-cmd-arg "arg">&2
-Echo            Use given arg on the command line when running "specificCmd.exe". Use the option>%2
+Echo            Use given arg on the command line when running "specificCmd.exe". Use the option>&2
 Echo            multiple times to pass multiple arguments to specificCmd.>&2
 Echo.>&2
 Echo    --default-cmd "cmdName.exe">&2
